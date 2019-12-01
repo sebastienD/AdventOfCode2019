@@ -17,7 +17,7 @@ func TestShouldComputeFuelNeeded(t *testing.T) {
 		{3, 0},
 	}
 	for _, data := range massData {
-		fuelActual := computeFuel(data.mass)
+		fuelActual := computeFuel(data.mass, false)
 		if fuelActual != data.fuelExpected {
 			t.Errorf("Line:[%v] expected %v, actual %v\n", data.mass, data.fuelExpected, fuelActual)
 		} else {
@@ -38,7 +38,7 @@ func TestShouldComputeRecursiveFuelNeeded(t *testing.T) {
 		{3, 0},
 	}
 	for _, data := range massData {
-		fuelActual := computeRecursiveFuel(data.mass)
+		fuelActual := computeFuel(data.mass, true)
 		if fuelActual != data.fuelExpected {
 			t.Errorf("Line:[%v] expected %v, actual %v\n", data.mass, data.fuelExpected, fuelActual)
 		} else {

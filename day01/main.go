@@ -8,20 +8,15 @@ import (
 	"strconv"
 )
 
-func computeFuel(mass int) int {
+func computeFuel(mass int, rec bool) int {
 	fuel := (mass / 3) - 2
 	if fuel < 0 {
 		return 0
+	}
+	if rec {
+		return fuel + computeFuel(fuel, rec)
 	}
 	return fuel
-}
-
-func computeRecursiveFuel(mass int) int {
-	fuel := (mass / 3) - 2
-	if fuel < 0 {
-		return 0
-	}
-	return fuel + computeRecursiveFuel(fuel)
 }
 
 func toi(in string) int {
@@ -48,7 +43,7 @@ func firstPart(filename string) {
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		mass := scanner.Text()
-		total += computeFuel(toi(mass))
+		total += computeFuel(toi(mass), false)
 	}
 
 	fmt.Printf("Total %v\n", total)
@@ -64,7 +59,7 @@ func secondPart(filename string) {
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		mass := scanner.Text()
-		total += computeRecursiveFuel(toi(mass))
+		total += computeFuel(toi(mass), true)
 	}
 
 	fmt.Printf("Total %v\n", total)
