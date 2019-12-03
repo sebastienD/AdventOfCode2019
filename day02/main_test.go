@@ -23,6 +23,6 @@ func TestProgramm(t *testing.T) {
 		actual := computeProgramm(instructions)
 		fmt.Printf("%v\n", strings.Join(strings.Fields(fmt.Sprint(actual)), ","))
 		instrActual := strings.Trim(strings.Join(strings.Fields(fmt.Sprint(actual)), ","), "[]")
-		assert.Equal(t, instrActual, d.instrExpected, "they should be equal")
+		assert.Equal(t, d.instrExpected, instrActual, "they should be equal")
 	}
 }
