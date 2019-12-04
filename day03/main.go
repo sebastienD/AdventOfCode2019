@@ -16,13 +16,14 @@ type point struct {
 }
 
 type line struct {
-	start    point
-	end      point
-	vertical bool
+	start     point
+	end       point
+	vertical  bool
+	direction string
 }
 
-func newLine(s point, e point) line {
-	return line{s, e, s.x == e.x}
+func newLine(s point, e point, d string) line {
+	return line{s, e, s.x == e.x, d}
 }
 
 func (l line) cross(o line) (bool, point) {
@@ -62,8 +63,10 @@ func main() {
 	path2 := scanner.Text()
 
 	distance := dist(path1, path2)
-
 	fmt.Printf("Dist is %v\n", distance)
+
+	nbSteps := lessStep(path1, path2)
+	fmt.Printf("NbSteps is %v\n", nbSteps)
 }
 
 func dist(p1 string, p2 string) int {
@@ -123,16 +126,16 @@ func instr2line(start point, instr string) line {
 	num := toi(instr[1:])
 	switch move {
 	case "U":
-		return newLine(start, point{start.x, start.y + num})
+		return newLine(start, point{start.x, start.y + num}, move)
 	case "D":
-		return newLine(start, point{start.x, start.y - num})
+		return newLine(start, point{start.x, start.y - num}, move)
 	case "R":
-		return newLine(start, point{start.x + num, start.y})
+		return newLine(start, point{start.x + num, start.y}, move)
 	case "L":
-		return newLine(start, point{start.x - num, start.y})
+		return newLine(start, point{start.x - num, start.y}, move)
 	}
 	log.Fatalf("Move %v unknown", move)
-	return newLine(point{0, 0}, point{0, 0})
+	return newLine(point{0, 0}, point{0, 0}, "")
 }
 
 func toi(in string) int {
@@ -141,4 +144,80 @@ func toi(in string) int {
 		log.Fatal(err)
 	}
 	return num
+}
+
+func lessStep(p1 string, p2 string) int {
+	instructions1 := toInstruction(p1)
+	lines1 := instructions2lines(instructions1)
+
+	instructions2 := toInstruction(p2)
+	lines2 := instructions2lines(instructions2)
+
+	points := cross(lines1, lines2)
+
+	nbSteps1, crossPoint := firstCross(lines1, points)
+	fmt.Printf("First Cross is %v in nbSteps %v\n", crossPoint, nbSteps1)
+
+	nbSteps2 := nbStepsTo(crossPoint, lines2)
+
+	return nbSteps1 + nbSteps2
+}
+
+func firstCross(lines []line, crosses []point) (int, point) {
+	nbSteps := 0
+	for _, l := range lines {
+		for _, p := range crosses {
+			ok, nb := pointIsIn(l, p)
+			if ok {
+				return nbSteps + nb, p
+			}
+		}
+		nbSteps += nbStepsIn(l)
+	}
+	return 0, point{0, 0}
+}
+
+func pointIsIn(l line, p point) (bool, int) {
+	if l.vertical {
+		max := math.Max(float64(l.start.y), float64(l.end.y))
+		min := math.Min(float64(l.start.y), float64(l.end.y))
+		if p.x == l.start.x && float64(p.y) >= min && float64(p.y) <= max {
+			res := true
+			if l.direction == "U" {
+				return res, int(math.Abs(float64(p.y - l.start.y)))
+			}
+			return res, int(math.Abs(float64(l.start.y - p.y)))
+		}
+		return false, 0
+	}
+
+	max := math.Max(float64(l.start.x), float64(l.end.x))
+	min := math.Min(float64(l.start.x), float64(l.end.x))
+	if p.y == l.start.y && float64(p.x) >= min && float64(p.x) <= max {
+		res := true
+		if l.direction == "R" {
+			return res, int(math.Abs(float64(p.x - l.start.x)))
+		}
+		return res, int(math.Abs(float64(l.start.x - p.x)))
+	}
+	return false, 0
+}
+
+func nbStepsIn(l line) int {
+	if l.vertical {
+		return int(math.Abs(float64(l.end.y - l.start.y)))
+	}
+	return int(math.Abs(float64(l.end.x - l.start.x)))
+}
+
+func nbStepsTo(p point, lines []line) int {
+	nbSteps := 0
+	for _, l := range lines {
+		ok, nb := pointIsIn(l, p)
+		if ok {
+			return nbSteps + nb
+		}
+		nbSteps += nbStepsIn(l)
+	}
+	return 0
 }
